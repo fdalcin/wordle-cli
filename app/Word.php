@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\CompareType;
 use Illuminate\Support\Collection;
 
 class Word
@@ -37,22 +38,22 @@ class Word
         $compareLetters = $compareTo->letters();
 
         $this->comparison = $this->letters()
-            ->map(static function ($letter, $index) use ($compareLetters, $positions) {
+            ->map(static function ($letter, $index) use ($compareLetters, $positions): CompareType {
                 $position = $compareLetters->search(
                     fn ($compareLetter, $comparePosition) => $compareLetter === $letter && ! $positions->contains($comparePosition)
                 );
 
                 if ($position === false) {
-                    return 'not-found';
+                    return CompareType::NOT_FOUND;
                 }
 
                 $positions->push($position);
 
                 if ($index === $position) {
-                    return 'found';
+                    return CompareType::FOUND;
                 }
 
-                return 'out-of-order';
+                return CompareType::OUT_OF_ORDER;
             });
 
         return $this;
@@ -89,16 +90,9 @@ class Word
     {
         return $this->letters()
             ->reduce(function ($output, $letter, $index) {
-                $match = $this->comparison?->get($index) ?? null;
+                $color = $this->comparison?->get($index)?->color() ?? 'bg-gray-500 text-gray-100';
 
-                $class = match ($match) {
-                    'found' => 'bg-green-700 text-green-100',
-                    'out-of-order' => 'bg-yellow-500 text-yellow-100',
-                    'not-found' => 'bg-gray-600 text-gray-100',
-                    default => 'bg-gray-500 text-gray-100',
-                };
-
-                return "{$output}<span class='mr-1 px-1 uppercase {$class}'>{$letter}</span>";
+                return "{$output}<span class='mr-1 px-1 uppercase {$color}'>{$letter}</span>";
             });
     }
 

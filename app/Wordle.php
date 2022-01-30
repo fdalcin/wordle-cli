@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\Keys;
 use Illuminate\Support\Collection;
 use function Termwind\render;
 
@@ -160,7 +161,10 @@ class Wordle
      */
     protected function isDeleting(string $char): bool
     {
-        return in_array(ord($char), [126, 127]);
+        return in_array(
+            Keys::tryFrom(ord($char)),
+            [Keys::BACKSPACE, Keys::DELETE]
+        );
     }
 
     /**
@@ -173,6 +177,6 @@ class Wordle
      */
     protected function isAttempting(string $word, string $char): bool
     {
-        return strlen($word) === $this->maxLetters && ord($char) === 0;
+        return strlen($word) === $this->maxLetters && Keys::tryFRom(ord($char)) === Keys::ENTER;
     }
 }
