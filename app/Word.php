@@ -6,10 +6,15 @@ use Illuminate\Support\Collection;
 
 class Word
 {
+    /**
+     * The list of letters compared to the answer.
+     *
+     * @var Collection
+     */
     protected ?Collection $comparison = null;
 
     /**
-     * Create a new word instance.
+     * Create a new Word instance.
      *
      * @var string
      *
@@ -19,6 +24,13 @@ class Word
     {
     }
 
+    /**
+     * Compare the current word with another word.
+     *
+     * @param Word $word
+     *
+     * @return Word
+     */
     public function compare(self $compareTo): self
     {
         $positions = collect();
@@ -46,21 +58,38 @@ class Word
         return $this;
     }
 
+    /**
+     * Check if the current word matches another word.
+     *
+     * @param Word $word
+     *
+     * @return bool
+     */
     public function matches(self $matchTo): bool
     {
         return $this->value === $matchTo->value;
     }
 
+    /**
+     * Return a collection of letters in the word.
+     *
+     * @return Collection
+     */
     public function letters(): Collection
     {
         return collect(str_split($this->value));
     }
 
+    /**
+     * Render the word based on the comparison result.
+     *
+     * @return string
+     */
     public function render(): string
     {
         return $this->letters()
             ->reduce(function ($output, $letter, $index) {
-                $match = $this->comparison?->get($index) ?? '';
+                $match = $this->comparison?->get($index) ?? null;
 
                 $class = match ($match) {
                     'found' => 'bg-green-700 text-green-100',
