@@ -35,6 +35,6 @@ class Play extends Command
 
         $wordle->play($answer);
 
-        exit(1);
+        return 0;
     }
 }
