@@ -38,22 +38,22 @@ class Word
         $compareLetters = $compareTo->letters();
 
         $this->comparison = $this->letters()
-            ->map(static function ($letter, $index) use ($compareLetters, $positions): CompareType {
+            ->map(static function (string $letter, int $index) use ($compareLetters, $positions): CompareType {
                 $position = $compareLetters->search(
-                    fn ($compareLetter, $comparePosition) => $compareLetter === $letter && ! $positions->contains($comparePosition)
+                    fn (string $compareLetter, int $comparePosition) => $compareLetter === $letter && ! $positions->contains($comparePosition)
                 );
 
                 if ($position === false) {
-                    return CompareType::NOT_FOUND;
+                    return CompareType::ABSENT;
                 }
 
                 $positions->push($position);
 
                 if ($index === $position) {
-                    return CompareType::FOUND;
+                    return CompareType::CORRECT;
                 }
 
-                return CompareType::OUT_OF_ORDER;
+                return CompareType::PRESENT;
             });
 
         return $this;
@@ -89,7 +89,7 @@ class Word
     public function render(): string
     {
         return $this->letters()
-            ->reduce(function ($output, $letter, $index) {
+            ->reduce(function ($output, string $letter, int $index) {
                 $color = $this->comparison?->get($index)?->color() ?? 'bg-gray-500 text-gray-100';
 
                 return "{$output}<span class='mr-1 px-1 uppercase {$color}'>{$letter}</span>";
