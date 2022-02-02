@@ -25,12 +25,16 @@ class Play extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @param Wordle $wordle
+     * @return int
      */
-    public function handle(Wordle $wordle)
+    public function handle(Wordle $wordle): int
     {
+        /** @var array<int, string> */
+        $answers = require app_path('words/answers.php');
+
         $answer = new Word(
-            collect(require app_path('words/answers.php'))->random()
+            collect($answers)->random()
         );
 
         $wordle->play($answer);

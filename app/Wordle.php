@@ -11,14 +11,14 @@ class Wordle
     /**
      * The list of words allowed to be used.
      *
-     * @var Collection
+     * @var Collection<int, string>
      */
     protected Collection $allowedWords;
 
     /**
      * The list of words attempted in the game.
      *
-     * @var Collection
+     * @var Collection<int, Word>
      */
     protected Collection $attempts;
 
@@ -31,9 +31,12 @@ class Wordle
      */
     public function __construct(protected Board $board, protected int $maxAttempts = 6, protected int $maxLetters = 5)
     {
-        $this->allowedWords = collect(require app_path('words/allowed.php'));
+        /** @var array<int, string> */
+        $allowed = require app_path('words/allowed.php');
 
-        $this->attempts = collect();
+        $this->allowedWords = collect($allowed);
+
+        $this->attempts = collect(); // @phpstan-ignore-line
 
         $this->board
             ->setMaxAttempts($this->maxAttempts)
@@ -145,9 +148,9 @@ class Wordle
      *
      * @param string $char
      *
-     * @return bool
+     * @return false|int
      */
-    protected function isCharacterValid(string $char): bool
+    protected function isCharacterValid(string $char): false|int
     {
         return preg_match('/[a-z]/', $char);
     }
@@ -161,10 +164,7 @@ class Wordle
      */
     protected function isDeleting(string $char): bool
     {
-        return in_array(
-            Keys::tryFrom(ord($char)),
-            [Keys::BACKSPACE, Keys::DELETE]
-        );
+        return in_array(Keys::tryFrom(ord($char)), [Keys::BACKSPACE, Keys::DELETE], true);
     }
 
     /**

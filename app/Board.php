@@ -16,6 +16,20 @@ class Board
     protected string $title;
 
     /**
+     * The number of attempts.
+     *
+     * @var int
+     */
+    protected int $maxAttempts;
+
+    /**
+     * The number of letters in a word.
+     *
+     * @var int
+     */
+    protected int $maxLetters;
+
+    /**
      * Create a new Board instance.
      */
     public function __construct()
@@ -54,7 +68,7 @@ class Board
     /**
      * Render the board.
      *
-     * @param Collection $attempts
+     * @param Collection<int, Word> $attempts
      * @param string $attempt
      *
      * @return void
@@ -95,7 +109,7 @@ class Board
     /**
      * Render the previous attempts.
      *
-     * @param Collection $attempts
+     * @param Collection<int, Word> $attempts
      *
      * @return void
      */
@@ -115,11 +129,11 @@ class Board
      */
     protected function current(string $attempt): void
     {
-        $attempt = new Word(
-            str_pad($attempt ?? '', $this->maxLetters)
+        $word = new Word(
+            str_pad($attempt, $this->maxLetters)
         );
 
-        render("<div class='ml-1 mt-1 text-center'>{$attempt->render()}</div>");
+        render("<div class='ml-1 mt-1 text-center'>{$word->render()}</div>");
     }
 
     /**

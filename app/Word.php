@@ -10,15 +10,14 @@ class Word
     /**
      * The list of letters compared to the answer.
      *
-     * @var Collection
+     * @var ?Collection<int, CompareType::ABSENT|CompareType::CORRECT|CompareType::PRESENT>
      */
     protected ?Collection $comparison = null;
 
     /**
      * Create a new Word instance.
      *
-     * @var string
-     *
+     * @param string $value
      * @return void
      */
     public function __construct(protected string $value)
@@ -28,13 +27,12 @@ class Word
     /**
      * Compare the current word with another word.
      *
-     * @param Word $word
-     *
+     * @param Word $compareTo
      * @return Word
      */
     public function compare(self $compareTo): self
     {
-        $positions = collect();
+        $positions = collect(); // @phpstan-ignore-line
         $compareLetters = $compareTo->letters();
 
         $this->comparison = $this->letters()
@@ -62,8 +60,7 @@ class Word
     /**
      * Check if the current word matches another word.
      *
-     * @param Word $word
-     *
+     * @param Word $matchTo
      * @return bool
      */
     public function matches(self $matchTo): bool
@@ -74,7 +71,7 @@ class Word
     /**
      * Return a collection of letters in the word.
      *
-     * @return Collection
+     * @return Collection<int, string>
      */
     public function letters(): Collection
     {
@@ -89,11 +86,11 @@ class Word
     public function render(): string
     {
         return $this->letters()
-            ->reduce(function ($output, string $letter, int $index) {
+            ->reduce(function (string $output, string $letter, int $index): string {
                 $color = $this->comparison?->get($index)?->color() ?? 'bg-gray-500 text-gray-100';
 
                 return "{$output}<span class='mr-1 px-1 uppercase {$color}'>{$letter}</span>";
-            });
+            }, '');
     }
 
     /**
