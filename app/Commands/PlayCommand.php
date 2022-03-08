@@ -6,7 +6,7 @@ use App\Word;
 use App\Wordle;
 use LaravelZero\Framework\Commands\Command;
 
-class Play extends Command
+class PlayCommand extends Command
 {
     /**
      * The signature of the command.

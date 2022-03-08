@@ -10,7 +10,7 @@ class Word
     /**
      * The list of letters compared to the answer.
      *
-     * @var ?Collection<int, CompareType::ABSENT|CompareType::CORRECT|CompareType::PRESENT>
+     * @var ?Collection<int, CompareType>
      */
     protected ?Collection $comparison = null;
 
