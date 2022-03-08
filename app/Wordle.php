@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\CompareType;
 use App\Enums\Keys;
 use Illuminate\Support\Collection;
 use function Termwind\render;
@@ -23,6 +24,13 @@ class Wordle
     protected Collection $attempts;
 
     /**
+     * The list of letters that were guessed in the game.
+     *
+     * @var Collection<string, CompareType|null>
+     */
+    protected Collection $guessedLetters;
+
+    /**
      * Create a new Wordle instance.
      *
      * @param Board $board
@@ -37,6 +45,8 @@ class Wordle
         $this->allowedWords = collect($allowed);
 
         $this->attempts = collect(); // @phpstan-ignore-line
+
+        $this->guessedLetters = collect(); // @phpstan-ignore-line
 
         $this->board
             ->setMaxAttempts($this->maxAttempts)
@@ -53,10 +63,11 @@ class Wordle
     public function play(Word $answer): void
     {
         while ($this->attempts->count() < $this->maxAttempts) {
-            $this->board->render($this->attempts);
+            $this->board->render($this->attempts, $this->guessedLetters);
 
             $attempt = $this->readAttempt()->compare($answer);
             $this->attempts->push($attempt);
+            $this->updateGuessedLetters($attempt);
 
             if ($attempt->matches($answer)) {
                 $this->won($answer);
@@ -78,14 +89,19 @@ class Wordle
     protected function won(Word $answer): void
     {
         $message = match ($this->attempts->count()) {
-            5, 6 => 'Phew, you got it!',
-            default => 'You got it!',
+            1 => 'Genius',
+            2 => 'Magnificent',
+            3 => 'Impressive',
+            4 => 'Splendid',
+            5 => 'Great',
+            6 => 'Phew',
+            default => '',
         };
 
-        $this->board->render($this->attempts);
+        $this->board->render($this->attempts, $this->guessedLetters);
 
         render(
-            "<div class='ml-1 text-center text-green-500'>{$message} The word was '{$answer}'.</div>"
+            "<div class='ml-1 text-center text-green-500'>{$message}!</div>"
         );
     }
 
@@ -98,11 +114,35 @@ class Wordle
      */
     protected function lost(Word $answer): void
     {
-        $this->board->render($this->attempts);
+        $this->board->render($this->attempts, $this->guessedLetters);
 
         render(
             "<div class='ml-1 text-center text-red-400'>You lost! The word was '{$answer}'.</div>"
         );
+    }
+
+    /**
+     * Update the guessed letters list.
+     *
+     * @param Word $attempt
+     *
+     * @retrun void
+     */
+    protected function updateGuessedLetters(Word $attempt): void
+    {
+        $attempt->letters()
+            ->each(function (string $letter, int $index) use ($attempt) {
+                $type = $this->guessedLetters->get($letter);
+
+                if ($type === CompareType::CORRECT) {
+                    return;
+                }
+
+                $this->guessedLetters->put(
+                    $letter,
+                    $attempt->comparison()?->get($index) ?? CompareType::ABSENT
+                );
+            });
     }
 
     /**
@@ -127,7 +167,7 @@ class Wordle
                 }
             }
 
-            $this->board->render($this->attempts, $attempt);
+            $this->board->render($this->attempts, $this->guessedLetters, $attempt);
         }
     }
 

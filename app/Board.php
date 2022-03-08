@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\CompareType;
 use Illuminate\Support\Collection;
 use function Termwind\render;
 use function Termwind\terminal;
@@ -69,11 +70,12 @@ class Board
      * Render the board.
      *
      * @param Collection<int, Word> $attempts
+     * @param Collection<string, CompareType|null> $guessedLetters
      * @param string $attempt
      *
      * @return void
      */
-    public function render(Collection $attempts, string $attempt = ''): void
+    public function render(Collection $attempts, Collection $guessedLetters, string $attempt = ''): void
     {
         terminal()->clear();
 
@@ -91,7 +93,11 @@ class Board
             $this->pending($pendingAttempts - 1);
         }
 
-        render('');
+        $this->newline();
+
+        $this->keyboard($guessedLetters);
+
+        $this->newline();
     }
 
     /**
@@ -137,6 +143,41 @@ class Board
     }
 
     /**
+     * Render the keyboard.
+     *
+     * @param Collection<string, CompareType|null> $guessedLetters
+     *
+     * @return void
+     */
+    protected function keyboard(Collection $guessedLetters): void
+    {
+        $rows = collect([
+            ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+            ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+            ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+        ]);
+
+        $rows->each(function (array $row, int $index) use ($guessedLetters) {
+            $output = collect($row)->reduce(
+                function (string $output, string $letter) use ($guessedLetters) {
+                    $color = $guessedLetters->get($letter)?->color() ?? 'bg-gray-700 text-gray-200';
+
+                    return $output."<span class='mr-1 px-1 uppercase {$color}'>{$letter}</span>";
+                },
+                ''
+            );
+
+            $margin = match ($index) {
+                1 => 'ml-3',
+                2 => 'ml-5',
+                default => 'ml-1',
+            };
+
+            render("<div class='{$margin} mt-1 text-center'>{$output}</div>");
+        });
+    }
+
+    /**
      * Render the pending attempts.
      *
      * @param int $pendingAttempts
@@ -153,5 +194,15 @@ class Board
 
                 render("<div class='ml-1 mt-1 text-center'>{$output}</div>");
             });
+    }
+
+    /**
+     * Render a new line.
+     *
+     * @return void
+     */
+    protected function newLine(): void
+    {
+        render('');
     }
 }

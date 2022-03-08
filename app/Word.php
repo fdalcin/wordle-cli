@@ -79,6 +79,16 @@ class Word
     }
 
     /**
+     * Return the comparison of the current word.
+     *
+     * @return ?Collection<int, CompareType>
+     */
+    public function comparison(): ?Collection
+    {
+        return $this->comparison;
+    }
+
+    /**
      * Render the word based on the comparison result.
      *
      * @return string
